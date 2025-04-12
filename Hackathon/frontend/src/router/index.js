@@ -1,24 +1,58 @@
 import { createRouter, createWebHistory } from "vue-router";
-import HomeView from "../views/AboutView.vue";
-import AboutView from "../views/HomeView.vue";
-import ThreeGetRequestsView from "../views/ThreeGetRequests.vue";
+import AboutView from "../views/AboutView.vue";
+import AuthorView from "../views/AuthorView.vue";
+import ContentView from "../views/ContentView.vue";
+import DAOView from "../views/DAOView.vue";
+
+import ModerationView from "../views/Moderation/ModerationView.vue";
+
+import HomeView from "../views/Home/HomeView.vue";
+
+import PostView from "../views/Post/PostView.vue";
+
+import ProfileView from "../views/Profile/ProfileView.vue";
 
 // 定义路由规则
 const routes = [
   {
     path: "/",
-    name: "Home",
-    component: HomeView,
-  },
-  {
-    path: "/about",
     name: "About",
     component: AboutView,
   },
   {
-    path: "/ThreeGetRequests",
-    name: "threeGetRequests",
-    component: ThreeGetRequestsView,
+    path: "/Author",
+    name: "Author",
+    component: AuthorView,
+  },
+  {
+    path: "/Content",
+    name: "Content",
+    component: ContentView,
+  },
+  {
+    path: "/DAO",
+    name: "DAOView",
+    component: DAOView,
+  },
+  {
+    path: "/Post",
+    name: "Post",
+    component: PostView,
+  },
+  {
+    path: "/Profile",
+    name: "Profile",
+    component: ProfileView,
+  },
+  {
+    path: "/Moderation",
+    name: "Moderation",
+    component: ModerationView,
+  },
+  {
+    path: "/Home",
+    name: "Home",
+    component: HomeView,
   },
 ];
 
