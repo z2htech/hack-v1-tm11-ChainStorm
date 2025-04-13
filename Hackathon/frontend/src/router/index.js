@@ -2,6 +2,9 @@ import { createRouter, createWebHistory } from "vue-router";
 
 import ModerationView from "../views/Moderation/ModerationView.vue";
 
+import noReviewerView from "../views/Moderation/noReviewerView.vue";
+import ReviewerView from "../views/Moderation/ReviewerView.vue";
+
 import HomeView from "../views/Home/HomeView.vue";
 
 import PostView from "../views/Post/PostView.vue";
@@ -34,6 +37,16 @@ const routes = [
     path: "/Home",
     name: "Home",
     component: HomeView,
+  },
+  {
+    path: "/Reviewer",
+    name: "Reviewer",
+    component: ReviewerView,
+  },
+  {
+    path: "/noReviewer",
+    name: "noReviewerView",
+    component: noReviewerView,
   },
 ];
 

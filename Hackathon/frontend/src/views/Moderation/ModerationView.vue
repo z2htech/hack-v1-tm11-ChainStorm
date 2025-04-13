@@ -151,23 +151,25 @@ const currentPost = ref(null);
 const showPassModal = ref(false);
 const showRestrictionPage = ref(false);
 const showApplySuccessModal = ref(false);
-
+// 判断是否为Reviewer
+const isReviewer = ref(false);
 onMounted(async () => {
-  const author = useAuthorManager();
-
-  const content = useContentManager();
-
-  if (!author && !content) {
+  const dao = useContentReviewDAO();
+  if (!dao) {
     console.error("Web3 初始化失败");
     return;
   }
 
   try {
-    const account = await author.getAccount();
+    const account = await dao.getAccount();
     if (!account) {
       console.error("未连接钱包");
       return;
     }
+    isReviewer.value = await dao.isAddressReviewer(account);
+    console.log(isReviewer.value);
+
+    // const isReviewer = await dao.
   } catch (error) {
     console.error("获取DAO1信息失败:", error);
   }
@@ -196,7 +198,7 @@ const posts = ref([
     fullContent: `
       <h3>### **Bitcoin Products Tailored for Institutional Demand**</h3>
       <p>Rochard explained that the company's target clients include **credit allocators seeking volatility protection** and **equity risk-takers pursuing Bitcoin's asymmetric upside**. Market conditions permitting, its long-term vision involves securing $1 trillion in BTC over the next 21 years.</p>
-      
+
       <p>When asked about the timing and motivation behind the launch, Rochard revealed that the concept of a Bitcoin-backed securitization firm had intrigued him since his early days in Bitcoin, aligning with his background in asset-backed finance.</p>
     `,
   },

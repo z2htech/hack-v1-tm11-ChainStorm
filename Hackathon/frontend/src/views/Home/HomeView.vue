@@ -178,6 +178,9 @@
         </div>
       </div>
     </div>
+
+    <!-- 固定在右下角的 Coze 聊天组件容器 -->
+    <div id="coze-chat-container"></div>
   </div>
 </template>
 
@@ -185,16 +188,6 @@
 import { ref, reactive, onMounted } from "vue";
 import { useRouter } from "vue-router";
 import NavigationBar from "../../components/NavigationBar.vue";
-
-const router = useRouter();
-const activeTab = ref("featured");
-const searchQuery = ref("");
-const showModal = ref(false);
-const selectedItem = reactive({
-  name: "",
-  logo: "",
-  description: "",
-});
 
 // Sample featured blogs data
 import author1 from "../../assets/image/author1.png";
@@ -240,7 +233,7 @@ const knowledgeItems = ref([
       "Ethereum is a decentralized, open-source blockchain with smart contract functionality. Ether is the native cryptocurrency of the platform.",
   },
   {
-    name: "  Sui",
+    name: "Sui",
     logo: Sui,
     description:
       "Sui is a layer-1 blockchain designed to enable creators and developers to build experiences that cater to the next billion users in web3.",
@@ -252,6 +245,17 @@ const knowledgeItems = ref([
       "Aptos is a layer 1 blockchain built with Move, a safe and reliable language providing a secure foundation for the web3 ecosystem.",
   },
 ]);
+
+// Router for page navigation and search
+const router = useRouter();
+const activeTab = ref("featured");
+const searchQuery = ref("");
+const showModal = ref(false);
+const selectedItem = reactive({
+  name: "",
+  logo: "",
+  description: "",
+});
 
 // Function to set active tab
 const setActiveTab = (tab) => {
@@ -281,8 +285,33 @@ const closeModal = () => {
   showModal.value = false;
 };
 
+// Coze 聊天组件集成（在右下角显示）
 onMounted(() => {
-  // This will be executed when the component is mounted
+  // 加载 Coze SDK 脚本
+  const script = document.createElement("script");
+  script.src =
+    "https://lf-cdn.coze.cn/obj/unpkg/flow-platform/chat-app-sdk/1.2.0-beta.6/libs/cn/index.js";
+  script.onload = () => {
+    // 调用 CozeWebSDK 创建 WebChatClient，指定 container 为页面右下角的固定容器
+    new window.CozeWebSDK.WebChatClient({
+      config: {
+        bot_id: "7492681338060111884",
+      },
+      componentProps: {
+        title: "Coze",
+      },
+      auth: {
+        type: "token",
+        token:
+          "pat_pUf3TkbUC3UvpuOY3yZK5pTcSWfPNDGrfBvgxBBbdUFNjWDqHdeD1QKcv53tBEYH", // 替换为实际 token
+        onRefreshToken: function () {
+          return "pat_pUf3TkbUC3UvpuOY3yZK5pTcSWfPNDGrfBvgxBBbdUFNjWDqHdeD1QKcv53tBEYH";
+        },
+      },
+      container: "#coze-chat-container", // 指定挂载容器
+    });
+  };
+  document.body.appendChild(script);
 });
 </script>
 
@@ -306,6 +335,7 @@ body {
 }
 </style>
 
+<!-- Scoped 样式 -->
 <style scoped>
 .home-page {
   min-height: 100vh;
@@ -352,7 +382,7 @@ body {
 
 .background-logo {
   position: absolute;
-  top: 5%; /* Move up from 120% to 80% */
+  top: 5%;
   left: 50%;
   transform: translate(-50%, 0) scale(2.3);
   z-index: 1;
@@ -380,7 +410,7 @@ body {
 }
 
 .tagline {
-  margin-top: 100px; /* Reduce from 200px to 100px */
+  margin-top: 100px;
   font-size: 2rem;
   font-weight: bold;
   text-align: center;
@@ -389,7 +419,6 @@ body {
   letter-spacing: 2px;
   width: 100%;
   max-width: 800px;
-  height: auto;
 }
 
 /* Search Container */
@@ -442,13 +471,12 @@ body {
   transition: all 0.2s ease;
 }
 
-/* 渐变边框实现 */
 .tab-button::before {
   content: "";
   position: absolute;
   inset: 0;
   border-radius: 25px;
-  padding: 2px; /* 控制边框宽度 */
+  padding: 2px;
   background: linear-gradient(
     90deg,
     #5e02c7,
@@ -463,9 +491,8 @@ body {
   z-index: -1;
 }
 
-/* 选中状态：边框变白 */
 .tab-button.active::before {
-  background: linear-gradient(white, white); /* 边框颜色白色 */
+  background: linear-gradient(white, white);
 }
 
 .tab-button.active {
@@ -487,14 +514,9 @@ body {
   padding: 1.5rem;
   border-radius: 10px;
   border: 1px solid transparent;
-
-  /* 透明的内容区域 + 渐变边框 */
   background: linear-gradient(#0a0118, #0a0118) padding-box,
-    /* 内容完全透明 */
-      linear-gradient(90deg, #5e02c7, #7902ce, #5a26e8, #fcf1fe, #df01ea)
+    linear-gradient(90deg, #5e02c7, #7902ce, #5a26e8, #fcf1fe, #df01ea)
       border-box;
-
-  /* 可选：让背景有玻璃模糊的效果 */
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
 }
@@ -577,15 +599,15 @@ body {
 }
 
 .blog-title {
-  font-size: 1.2rem; /* 标题字体稍大 */
+  font-size: 1.2rem;
   font-weight: 600;
   color: white;
   margin-bottom: 0.5rem;
 }
 
 .blog-body {
-  font-size: 0.95rem; /* 正文字体稍小 */
-  color: #cccccc; /* 正文可适当用浅灰，降低视觉权重 */
+  font-size: 0.95rem;
+  color: #cccccc;
   line-height: 1.6;
 }
 
@@ -617,13 +639,11 @@ body {
 
 .graph-item {
   display: flex;
-  align-items: center; /* 图标和文字垂直居中 */
-  justify-content: center; /* 整个内容在父容器中水平居中 */
+  align-items: center;
+  justify-content: center;
   padding: 1.5rem;
   border-radius: 10px;
   border: 1px solid transparent;
-
-  /* 两边亮、中间暗，渐变边框效果 */
   background: linear-gradient(#0a0118, #0a0118) padding-box,
     linear-gradient(
         90deg,
@@ -634,7 +654,6 @@ body {
         #df01ea 100%
       )
       border-box;
-
   cursor: pointer;
   transition: all 0.3s ease;
 }
@@ -651,7 +670,6 @@ body {
   overflow: hidden;
   margin-right: 1rem;
   background-color: white;
-
   display: flex;
   align-items: center;
   justify-content: center;
@@ -668,6 +686,7 @@ body {
   font-weight: bold;
   color: white;
 }
+
 /* Modal Styles */
 .modal-overlay {
   position: fixed;
@@ -753,6 +772,14 @@ body {
 .graph-items::-webkit-scrollbar-thumb {
   background: #b429ff;
   border-radius: 3px;
+}
+
+/* 固定右下角 Coze 聊天容器 */
+#coze-chat-container {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  z-index: 1100;
 }
 
 /* Responsive adjustments */

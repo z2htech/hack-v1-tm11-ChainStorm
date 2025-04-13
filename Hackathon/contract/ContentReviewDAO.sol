@@ -395,6 +395,40 @@ contract ContentReviewDAO {
     function setKLTContract(address _addr) external onlyOwner {
         KLTContract = KLT(_addr);
     }
+
+    function getStakeOf(address _addr) external view returns (uint256) {
+        return reviewerStakes[_addr];
+    }
+
+    // 获取所有申请成为审核者的详细信息
+    function getAllApplications()
+        external
+        view
+        returns (
+            address[] memory applicants,
+            uint256[] memory yesVotes,
+            uint256[] memory noVotes,
+            uint256[] memory startTimes,
+            bool[] memory resolvedStatuses
+        )
+    {
+        uint256 length = applicationQueue.length;
+        applicants = new address[](length);
+        yesVotes = new uint256[](length);
+        noVotes = new uint256[](length);
+        startTimes = new uint256[](length);
+        resolvedStatuses = new bool[](length);
+
+        for (uint256 i = 0; i < length; i++) {
+            address applicant = applicationQueue[i];
+            Application storage app = pendingApplications[applicant];
+            applicants[i] = applicant;
+            yesVotes[i] = app.yesVotes;
+            noVotes[i] = app.noVotes;
+            startTimes[i] = app.startTime;
+            resolvedStatuses[i] = app.resolved;
+        }
+    }
 }
 
-// 0x5B38Da6a701c568545dCfcB03FcB875f56beddC4
+// 0x4FA88b6B204906046126EE4813034d876E2eAffe

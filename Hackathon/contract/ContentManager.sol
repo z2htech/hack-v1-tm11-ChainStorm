@@ -11,11 +11,12 @@ contract ContentManager {
         uint256 id; // 文章ID
         string content; // 文章内容（实际应用中，可将文章内容存到 IPFS，此处保存 IPFS 的 Hash）
         bytes32 contentHash; // 文章内容的 keccak256 哈希
-        uint256 likes; // 点赞数量
+        uint256 likes; // 通过数组长度自动计算
         uint256 reward; // 打赏金额（单位：wei）
         string[] comments; // 评论列表
         bool release; // 发布状态
         address author; // 作者地址
+        address[] likesAddress;
     }
 
     // 文章总数（文章ID自增）
@@ -50,7 +51,7 @@ contract ContentManager {
         uint256 amount
     );
 
-    // 构造函数，传入 AuthorManager 合约地址
+    // 构造函数，传入 AuthorManager 合约地址和 ERC20 代币地址
     constructor(address _authorManagerAddress, address _rewardToken) {
         AuthorManagerContract = AuthorManager(_authorManagerAddress);
         rewardToken = KLT(_rewardToken);
@@ -74,6 +75,7 @@ contract ContentManager {
         newArticle.id = articleCount;
         newArticle.content = _content;
         newArticle.contentHash = contentHash;
+        newArticle.likesAddress = new address[](0); // 初始化数组
         newArticle.likes = 0;
         newArticle.reward = 0;
         newArticle.release = false;
@@ -115,15 +117,16 @@ contract ContentManager {
             _articleId > 0 && _articleId <= articleCount,
             "Article does not exist"
         );
-        articles[_articleId].likes++;
+        articles[_articleId].likes = articles[_articleId].likesAddress.length;
         emit ArticleLiked(_articleId, articles[_articleId].likes);
     }
 
     /**
      * 打赏函数
      * @param _articleId 要打赏的文章ID
+     * @param amount 打赏金额
      *
-     * 此函数为 payable，调用时需携带以 wei 为单位的以太币。
+     * 此函数为非 payable，调用时需预先授权代币转账，转移代币到当前合约
      */
     function rewardArticle(uint256 _articleId, uint256 amount) public {
         require(
@@ -145,15 +148,11 @@ contract ContentManager {
         );
     }
 
-    // /**
-    //  * @dev 更新文章的 contentHash 和 release 状态
-    //  * @param _articleId 要更新的文章ID
-    //  * @param _newContentHash IPFS 上存储后的文章 hash（必须是 bytes32 类型，如果 IPFS hash 为 string，需转换）
-    //  *
-    //  * 调用此函数后，将指定文章的 contentHash 更新为传入的新值，同时将 release 状态置为 true，
-    //  * 表明该文章已授权并成功存储到 IPFS 上。
-    //  */
-    function updataArticleRelease(uint256 _articleId) public {
+    /**
+     * 更新文章的发布状态，置 release 为 true
+     * @param _articleId 要更新的文章ID
+     */
+    function updateArticleRelease(uint256 _articleId) public {
         require(
             _articleId > 0 && _articleId <= articleCount,
             "Article does not exist"
@@ -162,11 +161,15 @@ contract ContentManager {
         article.release = true;
     }
 
+    /**
+     * 更新文章的 IPFS 内容哈希，并将 release 状态置为 true
+     * @param _articleId 要更新的文章ID
+     * @param _newContentHash 新的 IPFS 哈希（bytes32 类型）
+     */
     function updateArticleIPFS(
         uint256 _articleId,
         bytes32 _newContentHash
     ) public {
-        // 检查指定的文章是否存在
         require(
             _articleId > 0 && _articleId <= articleCount,
             "Article does not exist"
@@ -180,7 +183,7 @@ contract ContentManager {
     }
 
     /**
-     * @dev 获取所有文章ID
+     * 获取所有文章ID
      * @return ids 所有文章ID数组
      */
     function getAllArticleId() public view returns (uint256[] memory) {
@@ -193,7 +196,7 @@ contract ContentManager {
     }
 
     /**
-     * @dev 获取指定文章的评论列表
+     * 获取指定文章的评论列表
      * @param _articleId 要查询的文章ID
      * @return 评论字符串数组
      */
@@ -208,7 +211,7 @@ contract ContentManager {
     }
 
     /**
-     * @dev 获取所有 release 为 true 的文章的 contentHash 数组
+     * 获取所有 release 为 true 的文章的 contentHash 数组
      * @return releasedContentHashes 存储满足条件的 contentHash 数组
      */
     function getReleasedArticlesContentHashes()
@@ -239,17 +242,111 @@ contract ContentManager {
         return result;
     }
 
+    /**
+     * 检查文章状态
+     * @param _articleId 要检查的文章ID
+     * @return exists 文章是否存在
+     * @return isReleased 文章是否已发布
+     */
     function checkArticleStatus(
         uint256 _articleId
     ) public view returns (bool exists, bool isReleased) {
-        // 检查ID有效性[1](@ref)
         exists = (_articleId > 0 && _articleId <= articleCount);
 
         if (exists) {
-            // 获取已发布状态[1](@ref)
             isReleased = articles[_articleId].release;
         } else {
             isReleased = false;
         }
     }
+
+    // ============================================================
+    // 新增函数
+    // ============================================================
+
+    /**
+     * 获取所有已发布（release 为 true）的文章ID
+     * @return ids 存储所有已发布文章的ID数组
+     */
+    function getReleasedArticleIds() public view returns (uint256[] memory) {
+        uint256 count = 0;
+        // 统计满足条件的文章数量
+        for (uint256 i = 1; i <= articleCount; i++) {
+            if (articles[i].release) {
+                count++;
+            }
+        }
+        uint256[] memory ids = new uint256[](count);
+        uint256 index = 0;
+        for (uint256 i = 1; i <= articleCount; i++) {
+            if (articles[i].release) {
+                ids[index] = articles[i].id;
+                index++;
+            }
+        }
+        return ids;
+    }
+
+    /**
+     * 获取所有未发布（release 为 false）的文章ID
+     * @return ids 存储所有未发布文章的ID数组
+     */
+    function getUnreleasedArticleIds() public view returns (uint256[] memory) {
+        uint256 count = 0;
+        // 统计未发布文章数量
+        for (uint256 i = 1; i <= articleCount; i++) {
+            if (!articles[i].release) {
+                count++;
+            }
+        }
+        uint256[] memory ids = new uint256[](count);
+        uint256 index = 0;
+        for (uint256 i = 1; i <= articleCount; i++) {
+            if (!articles[i].release) {
+                ids[index] = articles[i].id;
+                index++;
+            }
+        }
+        return ids;
+    }
+
+    /**
+     * 通过文章ID获取详细的文章信息
+     * @param _articleId 要查询的文章ID
+     * @return 返回对应的 Article 结构体数据
+     */
+    function getArticleDetails(
+        uint256 _articleId
+    ) public view returns (Article memory) {
+        require(
+            _articleId > 0 && _articleId <= articleCount,
+            "Article does not exist"
+        );
+        return articles[_articleId];
+    }
+
+    /**
+     * 设置点赞地址
+     * @param _articleId 要点赞的文章ID
+     * @param _addressLikes 要点赞的作者地址
+     */
+    function setArticleLikesAddress(
+        uint256 _articleId,
+        address _addressLikes
+    ) public {
+        articles[_articleId].likesAddress.push(_addressLikes);
+        articles[_articleId].likes += 1;
+    }
+
+    /**
+     * 查询文章的全部点赞地址
+     * @param _articleId 要点赞的文章ID
+     * @return 返回对应的 likesAddress 数组数据
+     */
+    function getArticleLikesAddress(
+        uint256 _articleId
+    ) public view returns (address[] memory) {
+        return articles[_articleId].likesAddress;
+    }
 }
+// 0xe8aA41202DE837e0b9CB448349c662193a32d7d9

@@ -14,26 +14,34 @@
         to="/Home"
         class="nav-link"
         :class="{ active: currentRoute === '/Home' }"
-        >Home</router-link
       >
+        Home
+      </router-link>
       <router-link
         to="/post"
         class="nav-link"
         :class="{ active: currentRoute === '/post' }"
-        >Post</router-link
       >
+        Post
+      </router-link>
       <router-link
         to="/profile"
         class="nav-link"
         :class="{ active: currentRoute === '/profile' }"
-        >Profile</router-link
       >
-      <router-link
-        to="/moderation"
+        Profile
+      </router-link>
+      <!-- 使用 a 标签替换 Moderation 的 router-link 并添加点击事件 -->
+      <a
         class="nav-link"
-        :class="{ active: currentRoute === '/moderation' }"
-        >Moderation</router-link
+        :class="{
+          active:
+            currentRoute === '/Reviewer' || currentRoute === '/noReviewer',
+        }"
+        @click="handleModerationClick"
       >
+        Moderation
+      </a>
     </div>
 
     <button
@@ -48,9 +56,13 @@
 
 <script setup>
 import { ref, computed, onMounted } from "vue";
-import { useRoute } from "vue-router";
+import { useRoute, useRouter } from "vue-router";
+import useContentReviewDAO from "../composables/useContentReviewDAO";
 
 const route = useRoute();
+const router = useRouter();
+
+// 当前路由路径
 const currentRoute = computed(() => route.path);
 
 const isWalletConnected = ref(false);
@@ -59,15 +71,34 @@ const walletButtonText = computed(() =>
   isWalletConnected.value ? "Connected" : "Connect Wallet"
 );
 
-// Check if wallet is already connected on component mount
-onMounted(() => {
+// 用于判断当前账户是否为审核者
+const isReviewer = ref(false);
+
+onMounted(async () => {
   checkWalletConnection();
+  const dao = useContentReviewDAO();
+  if (!dao) {
+    console.error("Web3 初始化失败");
+    return;
+  }
+
+  try {
+    const account = await dao.getAccount();
+    if (!account) {
+      console.error("未连接钱包");
+      return;
+    }
+    // 调用 isAddressReviewer 函数并将其返回结果赋给 isReviewer.value
+    isReviewer.value = await dao.isAddressReviewer(account);
+    console.log("isReviewer:", isReviewer.value);
+  } catch (error) {
+    console.error("获取DAO1信息失败:", error);
+  }
 });
 
-// Check if wallet is already connected
+// 检查钱包是否已连接
 const checkWalletConnection = async () => {
   try {
-    // Check if ethereum object exists (MetaMask or other wallet)
     if (window.ethereum) {
       const accounts = await window.ethereum.request({
         method: "eth_accounts",
@@ -76,7 +107,7 @@ const checkWalletConnection = async () => {
         isWalletConnected.value = true;
         walletAddress.value = accounts[0];
         console.log("Wallet already connected:", walletAddress.value);
-        setupAccountListeners(); // Call setupAccountListeners here
+        setupAccountListeners();
       }
     }
   } catch (error) {
@@ -84,28 +115,23 @@ const checkWalletConnection = async () => {
   }
 };
 
-// Connect wallet function
+// 连接钱包
 const connectWallet = async () => {
   if (isWalletConnected.value) {
     console.log("Wallet already connected:", walletAddress.value);
     return;
   }
-
   try {
-    // Check if ethereum object exists (MetaMask or other wallet)
     if (window.ethereum) {
       console.log("Connecting wallet...");
-
-      // Request account access
       const accounts = await window.ethereum.request({
         method: "eth_requestAccounts",
       });
-
       if (accounts.length > 0) {
         isWalletConnected.value = true;
         walletAddress.value = accounts[0];
         console.log("Wallet connected:", walletAddress.value);
-        setupAccountListeners(); // Call setupAccountListeners here
+        setupAccountListeners();
       }
     } else {
       alert("Please install MetaMask or another Ethereum wallet to connect");
@@ -116,21 +142,28 @@ const connectWallet = async () => {
   }
 };
 
-// Function to set up account change listeners
+// 账户更改监听
 const setupAccountListeners = () => {
   if (window.ethereum) {
     window.ethereum.on("accountsChanged", (accounts) => {
       if (accounts.length === 0) {
-        // User disconnected wallet
         isWalletConnected.value = false;
         walletAddress.value = "";
         console.log("Wallet disconnected");
       } else {
-        // User changed account
         walletAddress.value = accounts[0];
         console.log("Wallet account changed:", walletAddress.value);
       }
     });
+  }
+};
+
+// Moderation 点击处理函数，判断是否为审核者
+const handleModerationClick = () => {
+  if (isReviewer.value) {
+    router.push("/Reviewer");
+  } else {
+    router.push("/noReviewer");
   }
 };
 </script>
@@ -188,9 +221,9 @@ const setupAccountListeners = () => {
   text-decoration: none;
   font-size: 1.5rem;
   padding: 0.5rem 0;
-  line-height: 0.8; /* �����иߣ�������������λ�� */
-  margin-top: 8px; /* ��һ��������������λ�� */
+  margin-top: 8px;
   transition: border-bottom 0.2s ease;
+  cursor: pointer;
 }
 
 .nav-link.active {

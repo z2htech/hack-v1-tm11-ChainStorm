@@ -245,6 +245,16 @@ const useContentReviewDAO = () => {
       }
     };
 
+    // 新增查询函数：检查某个地址是否为审核者
+    const isAddressReviewer = async (addr) => {
+      try {
+        return await ContentReviewDAOContract.methods.isReviewer(addr).call();
+      } catch (error) {
+        console.error("审核者状态查询失败:", error);
+        throw new Error("无法查询审核者状态");
+      }
+    };
+
     return {
       web3,
       ContentReviewDAOContract,
@@ -264,6 +274,7 @@ const useContentReviewDAO = () => {
       getTotalStakedKLT,
       getMinVoteStake,
       getReviewerStakeAmount,
+      isAddressReviewer,
     };
   } catch (error) {
     console.error("Web3 initialization failed:", error);
