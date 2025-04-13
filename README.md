@@ -1,7 +1,5 @@
 # hack-v1-tm11-ChainStorm
 
-<img src="file:///E:/AAA%E5%A4%A7%E5%AD%A6/%E6%AF%94%E8%B5%9B/VitaFlux/hack-v1-tm11-ChainStorm/ChainStorm/photos/logo.png" title="" alt="logo" style="zoom:50%;">
-
 # DSRN
 
 **一个 AI 赋能的去中心化生态研究交流平台**
@@ -35,8 +33,10 @@
   * 审稿人需质押 DSRN Token 参与审核，被淘汰者的质押 Token 将被罚没10%，用于激励剩余团队内成员。
   
   * 若内容被打赏，赏金用于激励创作者及审稿人。
-
-<img title="" src="file:///E:/AAA%E5%A4%A7%E5%AD%A6/%E6%AF%94%E8%B5%9B/VitaFlux/hack-v1-tm11-ChainStorm/ChainStorm/photos/DAO.png" alt="DAO" style="zoom:50%;" data-align="center">
+    
+    ![图片描述](https://github.com/z2htech/hack-v1-tm11-ChainStorm/blob/main/photos/DAO.png?raw=true)
+    
+    
 
 #### **💰 2、认可度激励体系**
 
@@ -93,7 +93,7 @@
 ##### 1、**克隆存储库：**
 
 ```
-
+git clone https://github.com/z2htech/hack-v1-tm11-ChainStorm.git
 ```
 
 
@@ -101,7 +101,7 @@
 ##### 2、
 
 ```
-
+npm install
 ```
 
 
@@ -109,7 +109,7 @@
 ##### 3、
 
 ```
-
+npm run dev
 ```
 
 
