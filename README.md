@@ -1,5 +1,7 @@
 # hack-v1-tm11-ChainStorm
 
+![图片描述](https://github.com/z2htech/hack-v1-tm11-ChainStorm/blob/main/photos/logo.png?raw=true)
+
 # DSRN
 
 **一个 AI 赋能的去中心化生态研究交流平台**
@@ -33,7 +35,6 @@
   * 审稿人需质押 DSRN Token 参与审核，被淘汰者的质押 Token 将被罚没10%，用于激励剩余团队内成员。
   
   * 若内容被打赏，赏金用于激励创作者及审稿人。
-    
     ![图片描述](https://github.com/z2htech/hack-v1-tm11-ChainStorm/blob/main/photos/DAO.png?raw=true)
     
     
