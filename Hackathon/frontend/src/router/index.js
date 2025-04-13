@@ -1,8 +1,4 @@
 import { createRouter, createWebHistory } from "vue-router";
-import AboutView from "../views/AboutView.vue";
-import AuthorView from "../views/AuthorView.vue";
-import ContentView from "../views/ContentView.vue";
-import DAOView from "../views/DAOView.vue";
 
 import ModerationView from "../views/Moderation/ModerationView.vue";
 
@@ -16,23 +12,8 @@ import ProfileView from "../views/Profile/ProfileView.vue";
 const routes = [
   {
     path: "/",
-    name: "About",
-    component: AboutView,
-  },
-  {
-    path: "/Author",
-    name: "Author",
-    component: AuthorView,
-  },
-  {
-    path: "/Content",
-    name: "Content",
-    component: ContentView,
-  },
-  {
-    path: "/DAO",
-    name: "DAOView",
-    component: DAOView,
+    name: "Post",
+    component: PostView,
   },
   {
     path: "/Post",
